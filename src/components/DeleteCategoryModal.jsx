@@ -6,9 +6,9 @@ const DeleteCategoryModal = ({ category, categories, promptCount, onConfirm, onC
 
   const handleConfirm = () => {
     if (action === 'move' && targetCategory) {
-      onConfirm(category.id, parseInt(targetCategory))
+      onConfirm('move', targetCategory)
     } else {
-      onConfirm(category.id)
+      onConfirm('delete')
     }
   }
 

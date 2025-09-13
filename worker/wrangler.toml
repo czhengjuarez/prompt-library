@@ -1,0 +1,20 @@
+name = "prompt-library"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+ENVIRONMENT = "production"
+
+[[kv_namespaces]]
+binding = "PROMPT_LIBRARY_KV"
+id = "802c6a0425024104a3151638d1b73f22"
+preview_id = "2a1d54a1505f4f1a9e0248f5b6a8dbfe"
+
+[build]
+command = ""
+
+[env.production.vars]
+ENVIRONMENT = "production"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"

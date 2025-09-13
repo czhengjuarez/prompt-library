@@ -13,8 +13,8 @@ import PromptDetailsModal from './PromptDetailsModal'
 
 const PromptLibrary = () => {
   const { isDarkMode, toggleDarkMode } = useTheme()
-  const { data: categories, loading: categoriesLoading, error: categoriesError, updateData: updateCategories } = useCategories()
-  const { data: prompts, loading: promptsLoading, error: promptsError, updateData: updatePrompts } = usePrompts()
+  const { data: categories, loading: categoriesLoading, error: categoriesError, addCategory: apiAddCategory, updateCategory: apiUpdateCategory, deleteCategory: apiDeleteCategory } = useCategories()
+  const { data: prompts, loading: promptsLoading, error: promptsError, addPrompt: apiAddPrompt, updatePrompt: apiUpdatePrompt, deletePrompt: apiDeletePrompt } = usePrompts()
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [showPromptForm, setShowPromptForm] = useState(false)
@@ -30,64 +30,86 @@ const PromptLibrary = () => {
     : prompts
 
   const addCategory = async (categoryData) => {
-    const newCategory = {
-      id: Date.now(),
-      ...categoryData
+    try {
+      const newCategory = {
+        id: Date.now().toString(),
+        ...categoryData
+      }
+      await apiAddCategory(newCategory)
+      setShowCategoryForm(false)
+    } catch (error) {
+      console.error('Failed to add category:', error)
     }
-    await updateCategories(prev => [...prev, newCategory])
-    setShowCategoryForm(false)
   }
 
   const updateCategory = async (categoryData) => {
-    await updateCategories(prev => prev.map(category => 
-      category.id === editingCategory.id 
-        ? { ...category, ...categoryData }
-        : category
-    ))
-    setEditingCategory(null)
+    try {
+      await apiUpdateCategory(editingCategory.id, categoryData)
+      setEditingCategory(null)
+    } catch (error) {
+      console.error('Failed to update category:', error)
+    }
   }
 
   const deleteCategory = async (action, targetCategoryId = null) => {
-    if (action === 'delete') {
-      // Delete all prompts in this category
-      await updatePrompts(prev => prev.filter(prompt => prompt.categoryId !== deletingCategory.id))
-    } else if (action === 'move' && targetCategoryId) {
-      // Move prompts to target category
-      await updatePrompts(prev => prev.map(prompt => 
-        prompt.categoryId === deletingCategory.id 
-          ? { ...prompt, categoryId: targetCategoryId }
-          : prompt
-      ))
+    try {
+      if (action === 'delete') {
+        // Delete category and all its prompts
+        const categoryPrompts = prompts.filter(prompt => prompt.categoryId === deletingCategory.id)
+        for (const prompt of categoryPrompts) {
+          await apiDeletePrompt(prompt.id)
+        }
+        await apiDeleteCategory(deletingCategory.id)
+      } else if (action === 'move' && targetCategoryId) {
+        // Move prompts to another category, then delete the category
+        const categoryPrompts = prompts.filter(prompt => prompt.categoryId === deletingCategory.id)
+        for (const prompt of categoryPrompts) {
+          await apiUpdatePrompt(prompt.id, { ...prompt, categoryId: targetCategoryId })
+        }
+        await apiDeleteCategory(deletingCategory.id)
+      }
+      
+      // Clear selected category if it was deleted
+      if (selectedCategory && selectedCategory.id === deletingCategory.id) {
+        setSelectedCategory(null)
+      }
+      
+      setDeletingCategory(null)
+    } catch (error) {
+      console.error('Failed to delete category:', error)
     }
-    
-    // Delete the category
-    await updateCategories(prev => prev.filter(category => category.id !== deletingCategory.id))
-    
-    // Clear selection if we're deleting the selected category
-    if (selectedCategory?.id === deletingCategory.id) {
-      setSelectedCategory(null)
-    }
-    
-    setDeletingCategory(null)
   }
 
   const addPrompt = async (promptData) => {
-    await updatePrompts(prev => [...prev, promptData])
-    setShowPromptForm(false)
+    try {
+      const newPrompt = {
+        id: Date.now().toString(),
+        categoryId: selectedCategory?.id || null,
+        ...promptData
+      }
+      await apiAddPrompt(newPrompt)
+      setShowPromptForm(false)
+    } catch (error) {
+      console.error('Failed to add prompt:', error)
+    }
   }
 
   const updatePrompt = async (promptData) => {
-    await updatePrompts(prev => prev.map(prompt => 
-      prompt.id === editingPrompt.id 
-        ? { ...prompt, ...promptData, categoryId: editingPrompt.categoryId }
-        : prompt
-    ))
-    setEditingPrompt(null)
+    try {
+      await apiUpdatePrompt(editingPrompt.id, promptData)
+      setEditingPrompt(null)
+    } catch (error) {
+      console.error('Failed to update prompt:', error)
+    }
   }
 
-  const confirmDeletePrompt = async (promptId) => {
-    await updatePrompts(prev => prev.filter(prompt => prompt.id !== promptId))
-    setDeletingPrompt(null)
+  const deletePrompt = async () => {
+    try {
+      await apiDeletePrompt(deletingPrompt.id)
+      setDeletingPrompt(null)
+    } catch (error) {
+      console.error('Failed to delete prompt:', error)
+    }
   }
 
   const getCategoryPrompts = (categoryId) => {
@@ -285,7 +307,7 @@ const PromptLibrary = () => {
       {deletingPrompt && (
         <DeletePromptModal
           prompt={deletingPrompt}
-          onConfirm={() => confirmDeletePrompt(deletingPrompt.id)}
+          onConfirm={deletePrompt}
           onClose={() => setDeletingPrompt(null)}
         />
       )}

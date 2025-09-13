@@ -1,53 +1,36 @@
-// Cloudflare KV Storage Service
-// This service handles data persistence using Cloudflare KV storage
+// Cloudflare KV Storage Service via Worker API
+// This service handles data persistence using our deployed Cloudflare Worker API
 
-const CLOUDFLARE_CONFIG = {
-  // These will need to be set as environment variables
-  accountId: import.meta.env.VITE_CLOUDFLARE_ACCOUNT_ID,
-  namespaceId: import.meta.env.VITE_CLOUDFLARE_KV_NAMESPACE_ID,
-  apiToken: import.meta.env.VITE_CLOUDFLARE_API_TOKEN,
-  baseUrl: 'https://api.cloudflare.com/client/v4'
+const API_CONFIG = {
+  baseUrl: 'https://prompt-library.coscient.workers.dev/api'
 }
 
 class CloudflareStorageService {
   constructor() {
-    this.isConfigured = this.checkConfiguration()
-  }
-
-  checkConfiguration() {
-    return !!(CLOUDFLARE_CONFIG.accountId && 
-              CLOUDFLARE_CONFIG.namespaceId && 
-              CLOUDFLARE_CONFIG.apiToken)
+    this.isConfigured = true // Always configured since we use our own API
   }
 
   getHeaders() {
     return {
-      'Authorization': `Bearer ${CLOUDFLARE_CONFIG.apiToken}`,
       'Content-Type': 'application/json'
     }
   }
 
-  getKvUrl(key) {
-    return `${CLOUDFLARE_CONFIG.baseUrl}/accounts/${CLOUDFLARE_CONFIG.accountId}/storage/kv/namespaces/${CLOUDFLARE_CONFIG.namespaceId}/values/${key}`
+  getCategoriesUrl() {
+    return `${API_CONFIG.baseUrl}/categories`
   }
 
-  // Get data from KV storage
-  async getData(key) {
-    if (!this.isConfigured) {
-      console.warn('Cloudflare not configured, falling back to localStorage')
-      return this.getLocalStorageData(key)
-    }
+  getPromptsUrl() {
+    return `${API_CONFIG.baseUrl}/prompts`
+  }
 
+  // Get categories from API
+  async getCategories() {
     try {
-      const response = await fetch(this.getKvUrl(key), {
+      const response = await fetch(this.getCategoriesUrl(), {
         method: 'GET',
         headers: this.getHeaders()
       })
-
-      if (response.status === 404) {
-        // Key doesn't exist, return empty array
-        return []
-      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -56,49 +39,121 @@ class CloudflareStorageService {
       const data = await response.json()
       return data
     } catch (error) {
-      console.error(`Error fetching ${key} from Cloudflare KV:`, error)
+      console.error('Error fetching categories from API:', error)
       // Fallback to localStorage
-      return this.getLocalStorageData(key)
+      return this.getLocalStorageData('categories')
     }
   }
 
-  // Save data to KV storage
-  async saveData(key, data) {
-    if (!this.isConfigured) {
-      console.warn('Cloudflare not configured, falling back to localStorage')
-      return this.saveLocalStorageData(key, data)
-    }
-
+  // Get prompts from API
+  async getPrompts() {
     try {
-      const response = await fetch(this.getKvUrl(key), {
-        method: 'PUT',
-        headers: this.getHeaders(),
-        body: JSON.stringify(data)
+      const response = await fetch(this.getPromptsUrl(), {
+        method: 'GET',
+        headers: this.getHeaders()
       })
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      // Also save to localStorage as backup
-      this.saveLocalStorageData(key, data)
-      return true
+      const data = await response.json()
+      return data
     } catch (error) {
-      console.error(`Error saving ${key} to Cloudflare KV:`, error)
+      console.error('Error fetching prompts from API:', error)
       // Fallback to localStorage
-      return this.saveLocalStorageData(key, data)
+      return this.getLocalStorageData('prompts')
     }
   }
 
-  // Delete data from KV storage
-  async deleteData(key) {
-    if (!this.isConfigured) {
-      console.warn('Cloudflare not configured, falling back to localStorage')
-      return this.deleteLocalStorageData(key)
-    }
-
+  // Save category to API
+  async saveCategory(category) {
     try {
-      const response = await fetch(this.getKvUrl(key), {
+      const response = await fetch(this.getCategoriesUrl(), {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(category)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error saving category to API:', error)
+      throw error
+    }
+  }
+
+  // Update category via API
+  async updateCategory(categoryId, category) {
+    try {
+      const response = await fetch(`${this.getCategoriesUrl()}/${categoryId}`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify(category)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error updating category via API:', error)
+      throw error
+    }
+  }
+
+  // Save prompt to API
+  async savePrompt(prompt) {
+    try {
+      const response = await fetch(this.getPromptsUrl(), {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(prompt)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error saving prompt to API:', error)
+      throw error
+    }
+  }
+
+  // Update prompt via API
+  async updatePrompt(promptId, prompt) {
+    try {
+      const response = await fetch(`${this.getPromptsUrl()}/${promptId}`, {
+        method: 'PUT',
+        headers: this.getHeaders(),
+        body: JSON.stringify(prompt)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error updating prompt via API:', error)
+      throw error
+    }
+  }
+
+  // Delete category via API
+  async deleteCategory(categoryId) {
+    try {
+      const response = await fetch(`${this.getCategoriesUrl()}/${categoryId}`, {
         method: 'DELETE',
         headers: this.getHeaders()
       })
@@ -107,13 +162,29 @@ class CloudflareStorageService {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      // Also remove from localStorage
-      this.deleteLocalStorageData(key)
       return true
     } catch (error) {
-      console.error(`Error deleting ${key} from Cloudflare KV:`, error)
-      // Fallback to localStorage
-      return this.deleteLocalStorageData(key)
+      console.error('Error deleting category via API:', error)
+      throw error
+    }
+  }
+
+  // Delete prompt via API
+  async deletePrompt(promptId) {
+    try {
+      const response = await fetch(`${this.getPromptsUrl()}/${promptId}`, {
+        method: 'DELETE',
+        headers: this.getHeaders()
+      })
+
+      if (!response.ok && response.status !== 404) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error deleting prompt via API:', error)
+      throw error
     }
   }
 
@@ -148,43 +219,39 @@ class CloudflareStorageService {
     }
   }
 
-  // Specific methods for our app data
-  async getCategories() {
-    return await this.getData('categories')
-  }
-
+  // Legacy methods for backward compatibility (now use individual CRUD operations)
   async saveCategories(categories) {
-    return await this.saveData('categories', categories)
-  }
-
-  async getPrompts() {
-    return await this.getData('prompts')
+    // This method is deprecated - use individual category operations
+    console.warn('saveCategories is deprecated - use individual category operations')
+    return this.saveLocalStorageData('categories', categories)
   }
 
   async savePrompts(prompts) {
-    return await this.saveData('prompts', prompts)
+    // This method is deprecated - use individual prompt operations  
+    console.warn('savePrompts is deprecated - use individual prompt operations')
+    return this.saveLocalStorageData('prompts', prompts)
   }
 
-  // Sync localStorage to KV (useful for migration)
-  async syncLocalStorageToKv() {
-    if (!this.isConfigured) {
-      console.warn('Cloudflare not configured, cannot sync')
-      return false
-    }
-
+  // Sync localStorage to API (useful for migration)
+  async syncLocalStorageToApi() {
     try {
       const categories = this.getLocalStorageData('categories')
       const prompts = this.getLocalStorageData('prompts')
 
-      await Promise.all([
-        this.saveData('categories', categories),
-        this.saveData('prompts', prompts)
-      ])
+      // Migrate categories
+      for (const category of categories) {
+        await this.saveCategory(category)
+      }
 
-      console.log('Successfully synced localStorage to Cloudflare KV')
+      // Migrate prompts
+      for (const prompt of prompts) {
+        await this.savePrompt(prompt)
+      }
+
+      console.log('Successfully synced localStorage to API')
       return true
     } catch (error) {
-      console.error('Error syncing to Cloudflare KV:', error)
+      console.error('Error syncing to API:', error)
       return false
     }
   }
@@ -193,9 +260,7 @@ class CloudflareStorageService {
   getStatus() {
     return {
       configured: this.isConfigured,
-      accountId: !!CLOUDFLARE_CONFIG.accountId,
-      namespaceId: !!CLOUDFLARE_CONFIG.namespaceId,
-      apiToken: !!CLOUDFLARE_CONFIG.apiToken
+      apiUrl: API_CONFIG.baseUrl
     }
   }
 }
