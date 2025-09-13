@@ -10,7 +10,7 @@ import path from 'path';
 // Read the built files
 const htmlContent = fs.readFileSync('./dist/index.html', 'utf8');
 const cssContent = fs.readFileSync('./dist/assets/index-B7hv4zRb.css', 'utf8');
-const jsContent = fs.readFileSync('./dist/assets/index-ygbutfPi.js', 'utf8');
+const jsContent = fs.readFileSync('./dist/assets/index-C6NFAEaz.js', 'utf8');
 const favicoContent = fs.readFileSync('./dist/favico.svg', 'utf8');
 
 // Escape content for JavaScript strings
@@ -75,7 +75,7 @@ export default {
     }
 
     // Serve JS file
-    if (path === '/assets/index-ygbutfPi.js') {
+    if (path === '/assets/index-C6NFAEaz.js') {
       return new Response(JS_CONTENT, {
         headers: {
           'Content-Type': 'application/javascript',

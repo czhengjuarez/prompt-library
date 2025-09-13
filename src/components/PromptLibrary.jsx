@@ -26,8 +26,8 @@ const PromptLibrary = () => {
   const [viewingPrompt, setViewingPrompt] = useState(null)
 
   const filteredPrompts = selectedCategory 
-    ? prompts.filter(prompt => prompt.categoryId === selectedCategory.id)
-    : prompts
+    ? prompts.filter(prompt => prompt.categoryId === selectedCategory.id).sort((a, b) => a.title?.localeCompare(b.title) || 0)
+    : prompts.sort((a, b) => a.title?.localeCompare(b.title) || 0)
 
   const addCategory = async (categoryData) => {
     try {
@@ -296,7 +296,7 @@ const PromptLibrary = () => {
       {deletingCategory && (
         <DeleteCategoryModal
           category={deletingCategory}
-          categories={categories.filter(cat => cat.id !== deletingCategory.id)}
+          categories={categories.filter(cat => cat.id !== deletingCategory.id).sort((a, b) => a.name.localeCompare(b.name))}
           promptCount={getCategoryPrompts(deletingCategory.id).length}
           onConfirm={deleteCategory}
           onClose={() => setDeletingCategory(null)}

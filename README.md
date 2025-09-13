@@ -17,12 +17,21 @@ A modern, feature-rich React application for organizing and managing your AI pro
 - **Compact View**: Title-only cards for better space utilization
 - **Detailed View**: Click titles to see full prompt details in modal
 
+### 🎯 Core Functionality
+- **Category Management**: Organize prompts into custom categories with descriptions
+- **Prompt Organization**: Store prompts with title, purpose, AI persona, and custom fields
+- **Alphabetical Sorting**: Categories and prompts automatically sorted alphabetically for easy navigation
+- **Excel Export**: Export all prompts to Excel with dynamic custom fields support
+- **Persistent Storage**: Data stored in Cloudflare KV with global synchronization
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+
 ### 🎨 Modern UI/UX
 - **Clean Navigation**: Left sidebar with category navigation and straight edges
 - **Dark Mode**: Custom dark theme with `#0D1533` background and `#DD388B` accents
 - **Accessible Design**: High contrast colors and proper ARIA support
 - **Smooth Interactions**: Hover effects and transitions throughout
 - **Action Links**: Simplified text-based action buttons with icons
+- **Smart Organization**: Automatic alphabetical sorting for categories and prompts
 
 ### 💾 Serverless Architecture
 - **Cloudflare Workers**: Both frontend and backend deployed as edge functions

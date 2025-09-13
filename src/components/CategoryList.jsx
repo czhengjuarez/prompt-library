@@ -12,7 +12,7 @@ const CategoryList = ({ categories, onSelectCategory, selectedCategory, onEditCa
             No categories yet
           </div>
         ) : (
-          categories.map(category => (
+          categories.sort((a, b) => a.name.localeCompare(b.name)).map(category => (
             <div key={category.id} className="relative group">
               <button
                 onClick={() => onSelectCategory(category)}
