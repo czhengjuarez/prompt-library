@@ -16,6 +16,7 @@ A modern, feature-rich React application for organizing and managing your AI pro
 - **Custom Fields**: Auto-detection of placeholders + manual custom field creation
 - **Duplicate Prompts**: One-click duplication with "Copy [name]" format for creating variations
 - **Move Between Categories**: Easily relocate prompts to different categories with dropdown selection
+- **All Prompts View**: Single view displaying all prompts alphabetically across categories
 - **Compact View**: Title-only cards for better space utilization
 - **Detailed View**: Click titles to see full prompt details in modal
 
@@ -28,13 +29,13 @@ A modern, feature-rich React application for organizing and managing your AI pro
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 
 ### 🎨 Modern UI/UX
-- **Clean Navigation**: Left sidebar with category navigation and straight edges
+- **Clean Navigation**: Left sidebar with category navigation and "All Prompts" view
 - **Dark Mode**: Custom dark theme with `#0D1533` background and `#DD388B` accents
 - **Accessible Design**: High contrast colors and proper ARIA support
 - **Smooth Interactions**: Hover effects and transitions throughout
 - **Intuitive Actions**: Top-right action buttons (duplicate, move, edit, delete) on each prompt card
 - **Smart Organization**: Automatic alphabetical sorting for categories and prompts
-- **Streamlined Interface**: Removed redundant copy button, consolidated actions
+- **Streamlined Interface**: Consolidated navigation with "All Prompts" as first option
 
 ### 💾 Serverless Architecture
 - **Cloudflare Workers**: Both frontend and backend deployed as edge functions

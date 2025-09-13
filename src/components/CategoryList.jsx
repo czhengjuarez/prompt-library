@@ -1,4 +1,4 @@
-const CategoryList = ({ categories, onSelectCategory, selectedCategory, onEditCategory, onDeleteCategory }) => {
+const CategoryList = ({ categories, onSelectCategory, selectedCategory, onEditCategory, onDeleteCategory, onSelectAllPrompts, showingAllPrompts }) => {
   return (
     <div className="">
       <div className="mb-4">
@@ -7,6 +7,29 @@ const CategoryList = ({ categories, onSelectCategory, selectedCategory, onEditCa
       </div>
       
       <div className="space-y-1">
+        {/* All Prompts Option */}
+        <div className="relative group">
+          <div
+            onClick={onSelectAllPrompts}
+            className={`w-full text-left px-3 py-2 transition-colors flex items-center justify-between cursor-pointer ${
+              showingAllPrompts
+                ? 'bg-primary/10 text-primary dark:bg-primary/30 dark:text-white'
+                : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span className="font-medium">All Prompts</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Divider */}
+        {categories.length > 0 && (
+          <div className="border-t border-gray-200 dark:border-gray-600 my-2"></div>
+        )}
         {categories.length === 0 ? (
           <div className="py-4 text-gray-500 dark:text-gray-300 text-sm">
             No categories yet

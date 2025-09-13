@@ -17,6 +17,7 @@ const PromptLibrary = () => {
   const { data: categories, loading: categoriesLoading, error: categoriesError, addCategory: apiAddCategory, updateCategory: apiUpdateCategory, deleteCategory: apiDeleteCategory } = useCategories()
   const { data: prompts, loading: promptsLoading, error: promptsError, addPrompt: apiAddPrompt, updatePrompt: apiUpdatePrompt, deletePrompt: apiDeletePrompt } = usePrompts()
   const [selectedCategory, setSelectedCategory] = useState(null)
+  const [showingAllPrompts, setShowingAllPrompts] = useState(false)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [showPromptForm, setShowPromptForm] = useState(false)
   const [customizePrompt, setCustomizePrompt] = useState(null)
@@ -30,6 +31,18 @@ const PromptLibrary = () => {
   const filteredPrompts = selectedCategory 
     ? prompts.filter(prompt => prompt.categoryId === selectedCategory.id).sort((a, b) => a.title?.localeCompare(b.title) || 0)
     : prompts.sort((a, b) => a.title?.localeCompare(b.title) || 0)
+
+  // Handler for selecting all prompts
+  const handleSelectAllPrompts = () => {
+    setSelectedCategory(null)
+    setShowingAllPrompts(true)
+  }
+
+  // Handler for selecting a specific category
+  const handleSelectCategory = (category) => {
+    setSelectedCategory(category)
+    setShowingAllPrompts(false)
+  }
 
   const addCategory = async (categoryData) => {
     try {
@@ -233,9 +246,11 @@ const PromptLibrary = () => {
           <CategoryList
             categories={categories}
             selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            onSelectCategory={handleSelectCategory}
             onEditCategory={setEditingCategory}
             onDeleteCategory={setDeletingCategory}
+            onSelectAllPrompts={handleSelectAllPrompts}
+            showingAllPrompts={showingAllPrompts}
           />
         </div>
 
@@ -290,6 +305,26 @@ const PromptLibrary = () => {
               <p className="text-gray-500 dark:text-gray-300 mb-4">
                 No prompts in this category
               </p>
+              <button
+                onClick={() => setShowPromptForm(true)}
+                className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Add First Prompt
+              </button>
+            </div>
+          )}
+
+          {filteredPrompts.length === 0 && !categoriesLoading && !promptsLoading && showingAllPrompts && prompts.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-300 mb-4">
+                No prompts yet
+              </p>
+              <button
+                onClick={() => setShowPromptForm(true)}
+                className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Add First Prompt
+              </button>
             </div>
           )}
         </div>

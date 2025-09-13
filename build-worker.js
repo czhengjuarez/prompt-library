@@ -9,8 +9,8 @@ import path from 'path';
 
 // Read the built files
 const htmlContent = fs.readFileSync('./dist/index.html', 'utf8');
-const cssContent = fs.readFileSync('./dist/assets/index-C2x8KXCt.css', 'utf8');
-const jsContent = fs.readFileSync('./dist/assets/index-CZO-SQ95.js', 'utf8');
+const cssContent = fs.readFileSync('./dist/assets/index-j_I0D1AK.css', 'utf8');
+const jsContent = fs.readFileSync('./dist/assets/index-B8N6PFLh.js', 'utf8');
 const favicoContent = fs.readFileSync('./dist/favico.svg', 'utf8');
 
 // Escape content for JavaScript strings
@@ -65,7 +65,7 @@ export default {
     }
 
     // Handle CSS
-    if (path === '/assets/index-C2x8KXCt.css') {
+    if (path === '/assets/index-j_I0D1AK.css') {
       return new Response(CSS_CONTENT, {
         headers: {
           'Content-Type': 'text/css',
@@ -75,7 +75,7 @@ export default {
     }
 
     // Serve JS file
-    if (path === '/assets/index-CZO-SQ95.js') {
+    if (path === '/assets/index-B8N6PFLh.js') {
       return new Response(JS_CONTENT, {
         headers: {
           'Content-Type': 'application/javascript',
