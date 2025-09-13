@@ -8,6 +8,7 @@ import PromptCard from './PromptCard'
 import CategoryList from './CategoryList'
 import CustomizePromptModal from './CustomizePromptModal'
 import DeleteCategoryModal from './DeleteCategoryModal'
+import MovePromptModal from './MovePromptModal'
 import DeletePromptModal from './DeletePromptModal'
 import PromptDetailsModal from './PromptDetailsModal'
 
@@ -24,6 +25,7 @@ const PromptLibrary = () => {
   const [deletingCategory, setDeletingCategory] = useState(null)
   const [deletingPrompt, setDeletingPrompt] = useState(null)
   const [viewingPrompt, setViewingPrompt] = useState(null)
+  const [movingPrompt, setMovingPrompt] = useState(null)
 
   const filteredPrompts = selectedCategory 
     ? prompts.filter(prompt => prompt.categoryId === selectedCategory.id).sort((a, b) => a.title?.localeCompare(b.title) || 0)
@@ -129,6 +131,15 @@ const PromptLibrary = () => {
       await apiAddPrompt(duplicatedPrompt)
     } catch (error) {
       console.error('Failed to duplicate prompt:', error)
+    }
+  }
+
+  const movePrompt = async (prompt, targetCategoryId) => {
+    try {
+      await apiUpdatePrompt(prompt.id, { ...prompt, categoryId: targetCategoryId })
+      setMovingPrompt(null)
+    } catch (error) {
+      console.error('Failed to move prompt:', error)
     }
   }
 
@@ -266,6 +277,7 @@ const PromptLibrary = () => {
                   setEditingPrompt(prompt);
                 }}
                 onDuplicate={() => duplicatePrompt(prompt)}
+                onMove={() => setMovingPrompt(prompt)}
                 onDelete={() => setDeletingPrompt(prompt)}
                 onCustomize={() => setCustomizePrompt(prompt)}
                 onViewDetails={() => setViewingPrompt(prompt)}
@@ -336,6 +348,16 @@ const PromptLibrary = () => {
         />
       )}
 
+      {/* Move Prompt Modal */}
+      {movingPrompt && (
+        <MovePromptModal
+          prompt={movingPrompt}
+          categories={categories}
+          onConfirm={(targetCategoryId) => movePrompt(movingPrompt, targetCategoryId)}
+          onClose={() => setMovingPrompt(null)}
+        />
+      )}
+
       {/* Prompt Details Modal */}
       {viewingPrompt && (
         <PromptDetailsModal
@@ -343,7 +365,7 @@ const PromptLibrary = () => {
           onClose={() => setViewingPrompt(null)}
         />
       )}
-      </div>
+    </div>
     </div>
   )
 }
