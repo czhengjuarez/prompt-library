@@ -138,7 +138,7 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
           <h2 className="text-xl font-bold text-gray-900 mb-2">
             {editingPrompt ? 'Edit Prompt' : 'Add New Prompt'}
           </h2>
-          <p className="text-gray-600 mb-6">Category: {selectedCategory.name}</p>
+          <p className="text-gray-600 mb-6">Category: {selectedCategory?.name || 'All Prompts'}</p>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}

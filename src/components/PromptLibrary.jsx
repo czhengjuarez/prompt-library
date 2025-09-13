@@ -112,6 +112,26 @@ const PromptLibrary = () => {
     }
   }
 
+  const duplicatePrompt = async (originalPrompt) => {
+    try {
+      const duplicatedPrompt = {
+        id: Date.now().toString(),
+        title: `Copy ${originalPrompt.title || originalPrompt.purpose}`,
+        purpose: originalPrompt.purpose,
+        prompt: originalPrompt.prompt,
+        aiPersona: originalPrompt.aiPersona,
+        outputFormat: originalPrompt.outputFormat,
+        examples: originalPrompt.examples,
+        reference: originalPrompt.reference,
+        customFields: originalPrompt.customFields ? [...originalPrompt.customFields] : [],
+        categoryId: originalPrompt.categoryId,
+      }
+      await apiAddPrompt(duplicatedPrompt)
+    } catch (error) {
+      console.error('Failed to duplicate prompt:', error)
+    }
+  }
+
   const getCategoryPrompts = (categoryId) => {
     return prompts.filter(prompt => prompt.categoryId === categoryId)
   }
@@ -241,7 +261,11 @@ const PromptLibrary = () => {
               <PromptCard
                 key={prompt.id}
                 prompt={prompt}
-                onEdit={() => setEditingPrompt(prompt)}
+                onEdit={() => {
+                  console.log('Setting editing prompt:', prompt);
+                  setEditingPrompt(prompt);
+                }}
+                onDuplicate={() => duplicatePrompt(prompt)}
                 onDelete={() => setDeletingPrompt(prompt)}
                 onCustomize={() => setCustomizePrompt(prompt)}
                 onViewDetails={() => setViewingPrompt(prompt)}
@@ -272,7 +296,7 @@ const PromptLibrary = () => {
       )}
 
       {/* Prompt Form Modal */}
-      {(showPromptForm || editingPrompt) && selectedCategory && (
+      {(showPromptForm || editingPrompt) && (
         <PromptForm
           selectedCategory={selectedCategory}
           editingPrompt={editingPrompt}

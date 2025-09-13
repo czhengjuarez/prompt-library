@@ -14,9 +14,9 @@ const CategoryList = ({ categories, onSelectCategory, selectedCategory, onEditCa
         ) : (
           categories.sort((a, b) => a.name.localeCompare(b.name)).map(category => (
             <div key={category.id} className="relative group">
-              <button
+              <div
                 onClick={() => onSelectCategory(category)}
-                className={`w-full text-left px-3 py-2 transition-colors flex items-center justify-between ${
+                className={`w-full text-left px-3 py-2 transition-colors flex items-center justify-between cursor-pointer ${
                   selectedCategory?.id === category.id
                     ? 'bg-primary/10 text-primary dark:bg-primary/30 dark:text-white'
                     : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -51,7 +51,7 @@ const CategoryList = ({ categories, onSelectCategory, selectedCategory, onEditCa
                     </svg>
                   </button>
                 </div>
-              </button>
+              </div>
             </div>
           ))
         )}
