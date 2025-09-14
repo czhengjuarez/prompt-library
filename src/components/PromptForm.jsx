@@ -13,6 +13,7 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
     example: ''
   })
   const [customFields, setCustomFields] = useState([{ name: '', type: 'text' }])
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     if (editingPrompt) {
@@ -46,7 +47,24 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!formData.title.trim() || !formData.whenINeedTo.trim() || !formData.iWant.trim() || !formData.soICan.trim() || !formData.prompt.trim() || !formData.outputFormat.trim()) return
+    
+    // Clear previous errors
+    setErrors({})
+    
+    // Validate required fields
+    const newErrors = {}
+    if (!formData.title.trim()) newErrors.title = 'Title is required'
+    if (!formData.whenINeedTo.trim()) newErrors.whenINeedTo = 'This field is required'
+    if (!formData.iWant.trim()) newErrors.iWant = 'This field is required'
+    if (!formData.soICan.trim()) newErrors.soICan = 'This field is required'
+    if (!formData.prompt.trim()) newErrors.prompt = 'Prompt template is required'
+    if (!formData.outputFormat.trim()) newErrors.outputFormat = 'Output format is required'
+    
+    // If there are errors, set them and return
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
 
     // Create purpose from job-to-be-done framework
     const purpose = `When I need to ${formData.whenINeedTo}, I want ${formData.iWant} so I can ${formData.soICan}`
@@ -66,7 +84,7 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
 
     const newPrompt = {
       id: editingPrompt?.id || Date.now().toString(),
-      categoryId: selectedCategory.id,
+      categoryId: selectedCategory?.id || editingPrompt?.categoryId || null,
       title: formData.title.trim(),
       purpose: purpose,
       prompt: formData.prompt.trim(),
@@ -152,9 +170,14 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g., Interview Plan, Blog Post, Meeting Agenda"
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent ${
+                  errors.title ? 'border-red-500' : 'border-gray-300'
+                }`}
                 required
               />
+              {errors.title && (
+                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+              )}
             </div>
 
             {/* Purpose */}
@@ -173,9 +196,14 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
                     value={formData.whenINeedTo}
                     onChange={handleChange}
                     placeholder="e.g., write a blog post, analyze data, create social media content"
-                    className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                    className={`w-full px-4 py-3 border-0 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all ${
+                      errors.whenINeedTo ? 'bg-red-50 ring-1 ring-red-200' : 'bg-gray-50 focus:bg-white'
+                    }`}
                     required
                   />
+                  {errors.whenINeedTo && (
+                    <p className="text-red-500 text-sm mt-1">{errors.whenINeedTo}</p>
+                  )}
                 </div>
 
                 <div>
@@ -189,9 +217,14 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
                     value={formData.iWant}
                     onChange={handleChange}
                     placeholder="e.g., engaging content, clear insights, compelling copy"
-                    className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                    className={`w-full px-4 py-3 border-0 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all ${
+                      errors.iWant ? 'bg-red-50 ring-1 ring-red-200' : 'bg-gray-50 focus:bg-white'
+                    }`}
                     required
                   />
+                  {errors.iWant && (
+                    <p className="text-red-500 text-sm mt-1">{errors.iWant}</p>
+                  )}
                 </div>
 
                 <div>
@@ -205,9 +238,14 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
                     value={formData.soICan}
                     onChange={handleChange}
                     placeholder="e.g., attract more readers, make better decisions, increase conversions"
-                    className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                    className={`w-full px-4 py-3 border-0 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all ${
+                      errors.soICan ? 'bg-red-50 ring-1 ring-red-200' : 'bg-gray-50 focus:bg-white'
+                    }`}
                     required
                   />
+                  {errors.soICan && (
+                    <p className="text-red-500 text-sm mt-1">{errors.soICan}</p>
+                  )}
                 </div>
 
                 {/* Purpose Preview */}
@@ -251,7 +289,7 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
             {/* Prompt */}
             <div>
               <label htmlFor="prompt" className="block text-sm font-medium text-gray-700 mb-1">
-                Prompt Template
+                Prompt Template *
               </label>
               <textarea
                 id="prompt"
@@ -260,9 +298,14 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
                 onChange={handleChange}
                 placeholder="Enter your AI prompt template here. Use placeholders like {topic}, {audience}, {tone} for customization..."
                 rows={6}
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary focus:outline-none transition-all resize-none"
+                className={`w-full px-4 py-3 border-0 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all resize-none ${
+                  errors.prompt ? 'bg-red-50 ring-1 ring-red-200' : 'bg-gray-50 focus:bg-white'
+                }`}
                 required
               />
+              {errors.prompt && (
+                <p className="text-red-500 text-sm mt-1">{errors.prompt}</p>
+              )}
               <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-xs text-blue-800 font-medium mb-1">💡 Making Your Prompt Customizable:</p>
                 <ul className="text-xs text-blue-700 space-y-1">
@@ -296,7 +339,7 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
             {/* Output Format */}
             <div>
               <label htmlFor="outputFormat" className="block text-sm font-medium text-gray-700 mb-1">
-                Output Format
+                Output Format *
               </label>
               <textarea
                 id="outputFormat"
@@ -305,9 +348,14 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
                 onChange={handleChange}
                 placeholder="Specify the desired output format, structure, or style. E.g., 'Provide a bulleted list with 5 items', 'Format as JSON', 'Write in markdown with headers'..."
                 rows={3}
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary focus:outline-none transition-all resize-none"
+                className={`w-full px-4 py-3 border-0 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none transition-all resize-none ${
+                  errors.outputFormat ? 'bg-red-50 ring-1 ring-red-200' : 'bg-gray-50 focus:bg-white'
+                }`}
                 required
               />
+              {errors.outputFormat && (
+                <p className="text-red-500 text-sm mt-1">{errors.outputFormat}</p>
+              )}
               <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
                 <p className="text-xs text-purple-800 font-medium mb-1">📋 Output Format Examples:</p>
                 <ul className="text-xs text-purple-700 space-y-1">
