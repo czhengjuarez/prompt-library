@@ -73,14 +73,37 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
     const allText = `${formData.prompt} ${formData.aiPersona} ${formData.outputFormat} ${formData.example} ${formData.reference}`
     const templatePlaceholders = extractPlaceholders(allText)
     
-    // Get manual custom field names
-    const customFieldNames = customFields
+    // Get manual custom fields with their descriptions
+    const manualCustomFields = customFields
       .filter(field => field.name.trim())
-      .map(field => field.name.trim())
+      .map(field => ({ 
+        name: field.name.trim(), 
+        type: 'text',
+        description: field.description?.trim() || ''
+      }))
     
-    // Merge and deduplicate
-    const allCustomFields = [...new Set([...templatePlaceholders, ...customFieldNames])]
-      .map(name => ({ name, type: 'text' }))
+    // Create a map to preserve descriptions for existing fields
+    const fieldDescriptionMap = {}
+    manualCustomFields.forEach(field => {
+      fieldDescriptionMap[field.name] = field.description
+    })
+    
+    // If editing, also preserve existing field descriptions
+    if (editingPrompt?.customFields) {
+      editingPrompt.customFields.forEach(field => {
+        if (!fieldDescriptionMap[field.name]) {
+          fieldDescriptionMap[field.name] = field.description || ''
+        }
+      })
+    }
+    
+    // Merge and deduplicate, preserving descriptions
+    const allFieldNames = [...new Set([...templatePlaceholders, ...manualCustomFields.map(f => f.name)])]
+    const allCustomFields = allFieldNames.map(name => ({
+      name,
+      type: 'text',
+      description: fieldDescriptionMap[name] || ''
+    }))
 
     const newPrompt = {
       id: editingPrompt?.id || Date.now().toString(),

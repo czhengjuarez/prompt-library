@@ -57,11 +57,15 @@ const CustomizePromptModal = ({ prompt, onClose }) => {
       customized += replaceCustomFields(prompt.aiPersona) + '\n\n'
     }
     
-    // Add custom fields as structured input (always include if they exist)
+    // Only add "Input Details" for custom fields that are NOT placeholders (i.e., don't appear in any text)
     if (prompt.customFields && prompt.customFields.length > 0) {
-      const filledCustomFields = prompt.customFields.filter(field => 
-        field.name.trim() && customFields[field.name] && customFields[field.name].trim()
-      )
+      const filledCustomFields = prompt.customFields.filter(field => {
+        const fieldName = field.name.trim()
+        const hasValue = customFields[fieldName] && customFields[fieldName].trim()
+        // Only include if it has a value AND is not a template placeholder
+        const isTemplatePlaceholder = allTemplatePlaceholders.includes(fieldName)
+        return fieldName && hasValue && !isTemplatePlaceholder
+      })
       
       if (filledCustomFields.length > 0) {
         customized += 'Input Details:\n'
@@ -92,7 +96,7 @@ const CustomizePromptModal = ({ prompt, onClose }) => {
     }
 
     setCustomizedPrompt(customized)
-  }, [customFields, prompt])
+  }, [customFields, prompt, allTemplatePlaceholders])
 
   const handleFieldChange = (field, value) => {
     setCustomFields(prev => ({
