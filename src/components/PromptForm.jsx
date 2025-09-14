@@ -28,7 +28,16 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
         outputFormat: editingPrompt.outputFormat || '',
         example: editingPrompt.example || ''
       })
-      setCustomFields(editingPrompt.customFields || [{ name: '', type: 'text' }])
+      
+      // Filter out custom fields that are actually template placeholders
+      const promptText = `${editingPrompt.prompt || ''} ${editingPrompt.aiPersona || ''} ${editingPrompt.outputFormat || ''} ${editingPrompt.example || ''} ${editingPrompt.reference || ''}`
+      const autoDetectedPlaceholders = [...new Set(extractPlaceholders(promptText))]
+      
+      const manualCustomFields = (editingPrompt.customFields || []).filter(field => 
+        !autoDetectedPlaceholders.includes(field.name)
+      )
+      
+      setCustomFields(manualCustomFields.length > 0 ? manualCustomFields : [{ name: '', type: 'text' }])
     } else {
       setFormData({
         title: '',
@@ -146,7 +155,9 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
 
   const getAutoDetectedFields = () => {
     const allText = `${formData.prompt} ${formData.aiPersona} ${formData.outputFormat} ${formData.example} ${formData.reference}`
-    return extractPlaceholders(allText)
+    const placeholders = extractPlaceholders(allText)
+    // Remove duplicates using Set
+    return [...new Set(placeholders)]
   }
 
   // Extract placeholders from text
@@ -447,7 +458,8 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
               <div className="space-y-3">
                 {customFields.map((field, index) => {
                   const autoDetectedFields = getAutoDetectedFields()
-                  const isDuplicate = field.name && autoDetectedFields.includes(field.name)
+                  // Only show duplicate warning if the field name exactly matches AND it's not empty
+                  const isDuplicate = field.name.trim() && autoDetectedFields.includes(field.name.trim())
                   
                   return (
                     <div key={index} className="flex gap-3 items-start">
@@ -464,7 +476,7 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
                           }`}
                         />
                         {isDuplicate && (
-                          <p className="text-xs text-red-600 mt-1">⚠️ This field is already auto-detected from your prompt</p>
+                          <p className="text-xs text-red-600 mt-1">⚠️ This field is already auto-detected from your prompt. Consider removing this manual field.</p>
                         )}
                       </div>
                       <div className="flex-1">
