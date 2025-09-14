@@ -9,8 +9,8 @@ import path from 'path';
 
 // Read the built files
 const htmlContent = fs.readFileSync('./dist/index.html', 'utf8');
-const cssContent = fs.readFileSync('./dist/assets/index-2cjSUEBA.css', 'utf8');
-const jsContent = fs.readFileSync('./dist/assets/index-BskO1q5h.js', 'utf8');
+const cssContent = fs.readFileSync('./dist/assets/index-BK-ldGc8.css', 'utf8');
+const jsContent = fs.readFileSync('./dist/assets/index-D-tPFZLc.js', 'utf8');
 const favicoContent = fs.readFileSync('./dist/favico.svg', 'utf8');
 
 // Escape content for JavaScript strings
@@ -64,8 +64,8 @@ export default {
       });
     }
 
-    // Handle CSS
-    if (path === '/assets/index-2cjSUEBA.css') {
+    // Serve CSS file
+    if (path === '/assets/index-BK-ldGc8.css') {
       return new Response(CSS_CONTENT, {
         headers: {
           'Content-Type': 'text/css',
@@ -75,7 +75,7 @@ export default {
     }
 
     // Serve JS file
-    if (path === '/assets/index-BskO1q5h.js') {
+    if (path === '/assets/index-D-tPFZLc.js') {
       return new Response(JS_CONTENT, {
         headers: {
           'Content-Type': 'application/javascript',

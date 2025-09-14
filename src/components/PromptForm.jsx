@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
@@ -14,6 +14,8 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
   })
   const [customFields, setCustomFields] = useState([{ name: '', type: 'text' }])
   const [errors, setErrors] = useState({})
+  const [initialFormState, setInitialFormState] = useState(null)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
   useEffect(() => {
     if (editingPrompt) {
@@ -37,9 +39,27 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
         !autoDetectedPlaceholders.includes(field.name)
       )
       
-      setCustomFields(manualCustomFields.length > 0 ? manualCustomFields : [{ name: '', type: 'text' }])
+      const finalCustomFields = manualCustomFields.length > 0 ? manualCustomFields : [{ name: '', type: 'text' }]
+      setCustomFields(finalCustomFields)
+      
+      // Set initial state for dirty checking
+      const initialState = {
+        formData: {
+          title: editingPrompt.title || '',
+          whenINeedTo: editingPrompt.purpose ? editingPrompt.purpose.split(', I want ')[0]?.replace('When I need to ', '') || '' : '',
+          iWant: editingPrompt.purpose ? editingPrompt.purpose.split(', I want ')[1]?.split(' so I can ')[0] || '' : '',
+          soICan: editingPrompt.purpose ? editingPrompt.purpose.split(' so I can ')[1] || '' : '',
+          aiPersona: editingPrompt.aiPersona || '',
+          prompt: editingPrompt.prompt || '',
+          reference: editingPrompt.reference || '',
+          outputFormat: editingPrompt.outputFormat || '',
+          example: editingPrompt.example || ''
+        },
+        customFields: finalCustomFields
+      }
+      setInitialFormState(initialState)
     } else {
-      setFormData({
+      const newFormData = {
         title: '',
         whenINeedTo: '',
         iWant: '',
@@ -49,8 +69,17 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
         reference: '',
         outputFormat: '',
         example: ''
+      }
+      const newCustomFields = [{ name: '', type: 'text' }]
+      
+      setFormData(newFormData)
+      setCustomFields(newCustomFields)
+      
+      // Set initial state for new prompts
+      setInitialFormState({
+        formData: newFormData,
+        customFields: newCustomFields
       })
-      setCustomFields([{ name: '', type: 'text' }])
     }
   }, [editingPrompt])
 
@@ -183,9 +212,63 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
     setCustomFields(updated)
   }
 
+  // Check if form has unsaved changes
+  const isFormDirty = React.useCallback(() => {
+    if (!initialFormState) return false
+    
+    // Check form data changes
+    const formDataChanged = Object.keys(formData).some(key => 
+      formData[key] !== initialFormState.formData[key]
+    )
+    
+    // Check custom fields changes
+    const customFieldsChanged = JSON.stringify(customFields) !== JSON.stringify(initialFormState.customFields)
+    
+    return formDataChanged || customFieldsChanged
+  }, [formData, customFields, initialFormState])
+
+  // Handle close with dirty state check
+  const handleClose = React.useCallback(() => {
+    if (isFormDirty()) {
+      setShowConfirmDialog(true)
+    } else {
+      onClose()
+    }
+  }, [isFormDirty, onClose])
+
+  // Handle backdrop click
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleClose()
+    }
+  }
+
+  // Handle escape key
+  const handleKeyDown = React.useCallback((e) => {
+    if (e.key === 'Escape') {
+      handleClose()
+    }
+  }, [handleClose])
+
+  // Add event listener for escape key
+  React.useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
+
+  // Confirm dialog handlers
+  const handleConfirmClose = () => {
+    setShowConfirmDialog(false)
+    onClose()
+  }
+
+  const handleCancelClose = () => {
+    setShowConfirmDialog(false)
+  }
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={handleBackdropClick}>
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-2">
             {editingPrompt ? 'Edit Prompt' : 'Add New Prompt'}
@@ -515,24 +598,52 @@ const PromptForm = ({ selectedCategory, editingPrompt, onSubmit, onClose }) => {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
-              <button
-                type="submit"
-                className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors"
-              >
-                {editingPrompt ? 'Update Prompt' : 'Create Prompt'}
-              </button>
+            <div className="flex justify-end space-x-3 pt-4">
               <button
                 type="button"
-                onClick={onClose}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-md text-sm font-medium transition-colors border border-gray-200"
+                onClick={handleClose}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
                 Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+              >
+                {editingPrompt ? 'Update Prompt' : 'Add Prompt'}
               </button>
             </div>
           </form>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-60">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Unsaved Changes
+            </h3>
+            <p className="text-gray-600 mb-6">
+              You have unsaved changes. Are you sure you want to close without saving?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={handleCancelClose}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Keep Editing
+              </button>
+              <button
+                onClick={handleConfirmClose}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Discard Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
