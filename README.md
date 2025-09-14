@@ -13,16 +13,16 @@ A modern, feature-rich React application for organizing and managing your AI pro
 ### 📝 Advanced Prompt Management
 - **Full CRUD Operations**: Create, read, update, and delete prompts
 - **Rich Prompt Structure**: Title, purpose (job-to-be-done framework), AI persona, output format, examples, and reference context
-- **Custom Fields**: Auto-detection of placeholders + manual custom field creation
-- **Duplicate Prompts**: One-click duplication with "Copy [name]" format for creating variations
-- **Move Between Categories**: Easily relocate prompts to different categories with dropdown selection
-- **All Prompts View**: Single view displaying all prompts alphabetically across categories
-- **Compact View**: Title-only cards for better space utilization
-- **Detailed View**: Click titles to see full prompt details in modal
+- **Template System**: Support for placeholders and custom fields
+- **Auto-Detection**: Automatically identifies placeholders in prompt text
+- **Custom Fields**: Add structured input fields to prompts
+- **Validation**: Form validation with helpful error messages
+- **Duplicate Field Prevention**: Intelligent handling of auto-detected vs manual custom fields
+- **Clean Field Consolidation**: Auto-detected placeholders are properly separated from custom fields
 
 ### 🎯 Core Functionality
-- **Category Management**: Organize prompts into custom categories with descriptions
-- **Prompt Organization**: Store prompts with title, purpose, AI persona, and custom fields
+- **Category Management**: Organize prompts into custom categories
+- **Prompt Creation & Editing**: Rich form interface for creating detailed prompts
 - **Alphabetical Sorting**: Categories and prompts automatically sorted alphabetically for easy navigation
 - **Excel Export**: Export all prompts to Excel with dynamic custom fields support
 - **Persistent Storage**: Data stored in Cloudflare KV with global synchronization
@@ -36,6 +36,9 @@ A modern, feature-rich React application for organizing and managing your AI pro
 - **Intuitive Actions**: Top-right action buttons (duplicate, move, edit, delete) on each prompt card
 - **Smart Organization**: Automatic alphabetical sorting for categories and prompts
 - **Streamlined Interface**: Consolidated navigation with "All Prompts" as first option
+- **Smart Modal Behavior**: Click outside or press Escape to close modals
+- **Unsaved Changes Protection**: Confirmation dialog prevents accidental data loss
+- **Dirty State Detection**: Only shows warnings when you have actual unsaved changes
 
 ### 💾 Serverless Architecture
 - **Cloudflare Workers**: Both frontend and backend deployed as edge functions
@@ -165,6 +168,15 @@ wrangler deploy
 - Prompt versioning and history
 - Team collaboration features
 - Advanced export formatting options
+
+## 🆕 Recent Updates
+
+### v2.1.0 - Smart Modal Experience
+- **Smart Modal Behavior**: Click outside or press Escape to close edit/create modals
+- **Unsaved Changes Protection**: Intelligent detection of form modifications with confirmation dialog
+- **Enhanced UX**: No more scrolling to find Cancel/Update buttons for quick exits
+- **Data Loss Prevention**: Clear warnings only when you have actual unsaved changes
+- **Improved Field Handling**: Better separation of auto-detected placeholders vs manual custom fields
 
 ## 📄 License
 
