@@ -4,6 +4,10 @@ A modern, feature-rich React application for organizing and managing your AI pro
 
 ## ✨ Features
 
+### 🔗 Direct Prompt Linking
+- **Share specific prompts** with human-readable URLs like `#/prompt/blog-creation-1757817465923`
+- **Focused recipient experience** - shared links show only the specific prompt with clean navigation
+
 ### 📁 Category Management
 - Create, edit, and delete prompt categories
 - Clean left-hand navigation sidebar with category descriptions
@@ -28,10 +32,12 @@ A modern, feature-rich React application for organizing and managing your AI pro
 - **Persistent Storage**: Data stored in Cloudflare KV with global synchronization
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 
-### 🎨 Modern UI/UX
-- **Clean Navigation**: Left sidebar with category navigation and "All Prompts" view
-- **Dark Mode**: Custom dark theme with `#0D1533` background and `#DD388B` accents
-- **Accessible Design**: High contrast colors and proper ARIA support
+### 🎨 User Experience
+- **Dark Mode Support**: Toggle between light and dark themes with system preference detection
+- **Intuitive Interface**: Clean, modern design with smooth animations and transitions
+- **Keyboard Shortcuts**: Quick actions for power users
+- **Loading States**: Smooth loading indicators for better user feedback
+- **Share Modal**: Beautiful modal with copy-to-clipboard functionality and visual feedback
 - **Smooth Interactions**: Hover effects and transitions throughout
 - **Intuitive Actions**: Top-right action buttons (duplicate, move, edit, delete) on each prompt card
 - **Smart Organization**: Automatic alphabetical sorting for categories and prompts
@@ -170,6 +176,13 @@ wrangler deploy
 - Advanced export formatting options
 
 ## 🆕 Recent Updates
+
+### v2.2.0 - Direct Prompt Linking
+- **🔗 Share Specific Prompts**: Generate human-readable URLs for individual prompts
+- **📱 Focused Recipient View**: Shared links display only the specific prompt with clean navigation
+- **🎨 Visual Action States**: Disabled actions (duplicate, move, delete) are grayed out for recipients
+- **📋 One-Click Sharing**: Copy shareable URLs directly from prompt cards with visual feedback
+- **🗂️ Folder Icon**: Move prompt action uses intuitive folder icon for better UX
 
 ### v2.1.0 - Smart Modal Experience
 - **Smart Modal Behavior**: Click outside or press Escape to close edit/create modals

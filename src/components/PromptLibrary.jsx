@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCategories, usePrompts } from '../hooks/useStorage'
+import { useURLRouter } from '../hooks/useURLRouter'
 import { exportPromptsToExcel, getExportSummary } from '../utils/excelExport'
 import CategoryForm from './CategoryForm'
 import PromptForm from './PromptForm'
@@ -11,13 +12,17 @@ import DeleteCategoryModal from './DeleteCategoryModal'
 import MovePromptModal from './MovePromptModal'
 import DeletePromptModal from './DeletePromptModal'
 import PromptDetailsModal from './PromptDetailsModal'
+import ShareLinkModal from './ShareLinkModal'
+import SharedPromptView from './SharedPromptView'
 
 const PromptLibrary = () => {
   const { isDarkMode, toggleDarkMode } = useTheme()
   const { data: categories, loading: categoriesLoading, error: categoriesError, addCategory: apiAddCategory, updateCategory: apiUpdateCategory, deleteCategory: apiDeleteCategory } = useCategories()
   const { data: prompts, loading: promptsLoading, error: promptsError, addPrompt: apiAddPrompt, updatePrompt: apiUpdatePrompt, deletePrompt: apiDeletePrompt } = usePrompts()
+  const { currentRoute, navigateToPrompt, navigateToHome, getShareableURL } = useURLRouter()
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [showingAllPrompts, setShowingAllPrompts] = useState(false)
+  const [directPromptId, setDirectPromptId] = useState(null)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [showPromptForm, setShowPromptForm] = useState(false)
   const [customizePrompt, setCustomizePrompt] = useState(null)
@@ -27,6 +32,55 @@ const PromptLibrary = () => {
   const [deletingPrompt, setDeletingPrompt] = useState(null)
   const [viewingPrompt, setViewingPrompt] = useState(null)
   const [movingPrompt, setMovingPrompt] = useState(null)
+  const [sharingPrompt, setSharingPrompt] = useState(null)
+  const [showSharedView, setShowSharedView] = useState(false)
+
+  // Handle direct prompt access via URL
+  useEffect(() => {
+    if (currentRoute.type === 'prompt') {
+      // Set shared view immediately if we have a prompt route, even before data loads
+      setShowSharedView(true)
+      
+      if (prompts.length > 0) {
+        const targetPrompt = prompts.find(p => p.id === currentRoute.promptId)
+        if (targetPrompt) {
+          setDirectPromptId(targetPrompt.id)
+          
+          // If URL specifies a category, select it for context
+          if (currentRoute.categoryId && categories.length > 0) {
+            const targetCategory = categories.find(c => c.id === currentRoute.categoryId)
+            if (targetCategory) {
+              setSelectedCategory(targetCategory)
+              setShowingAllPrompts(false)
+            }
+          } else if (targetPrompt.categoryId && categories.length > 0) {
+            // Auto-select the prompt's category if no category specified in URL
+            const promptCategory = categories.find(c => c.id === targetPrompt.categoryId)
+            if (promptCategory) {
+              setSelectedCategory(promptCategory)
+              setShowingAllPrompts(false)
+            }
+          } else {
+            // Show all prompts if no category context
+            setSelectedCategory(null)
+            setShowingAllPrompts(true)
+          }
+          
+          // Handle URL actions
+          if (currentRoute.action === 'edit') {
+            setEditingPrompt(targetPrompt)
+          } else if (currentRoute.action === 'customize') {
+            setCustomizePrompt(targetPrompt)
+          } else if (currentRoute.action === 'view') {
+            setViewingPrompt(targetPrompt)
+          }
+        }
+      }
+    } else if (currentRoute.type === 'home') {
+      setDirectPromptId(null)
+      setShowSharedView(false)
+    }
+  }, [currentRoute, prompts, categories])
 
   const filteredPrompts = selectedCategory 
     ? prompts.filter(prompt => prompt.categoryId === selectedCategory.id).sort((a, b) => a.title?.localeCompare(b.title) || 0)
@@ -36,12 +90,25 @@ const PromptLibrary = () => {
   const handleSelectAllPrompts = () => {
     setSelectedCategory(null)
     setShowingAllPrompts(true)
+    setDirectPromptId(null)
+    setShowSharedView(false)
+    navigateToHome()
   }
 
   // Handler for selecting a specific category
   const handleSelectCategory = (category) => {
     setSelectedCategory(category)
     setShowingAllPrompts(false)
+    setDirectPromptId(null)
+    setShowSharedView(false)
+    navigateToHome()
+  }
+
+  // Handler for returning to library from shared view
+  const handleBackToLibrary = () => {
+    setShowSharedView(false)
+    setDirectPromptId(null)
+    navigateToHome()
   }
 
   const addCategory = async (categoryData) => {
@@ -173,6 +240,24 @@ const PromptLibrary = () => {
     }
   }
 
+  // Get the shared prompt and its category for the shared view
+  const sharedPrompt = directPromptId ? prompts.find(p => p.id === directPromptId) : null
+  const sharedPromptCategory = sharedPrompt && sharedPrompt.categoryId 
+    ? categories.find(c => c.id === sharedPrompt.categoryId) 
+    : null
+
+  // Show shared view if accessing via direct link
+  if (showSharedView) {
+    return (
+      <SharedPromptView
+        prompt={sharedPrompt}
+        category={sharedPromptCategory}
+        onBackToLibrary={handleBackToLibrary}
+        isLoading={promptsLoading || !sharedPrompt}
+      />
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-bg transition-colors">
       <div className="p-6">
@@ -296,6 +381,8 @@ const PromptLibrary = () => {
                 onDelete={() => setDeletingPrompt(prompt)}
                 onCustomize={() => setCustomizePrompt(prompt)}
                 onViewDetails={() => setViewingPrompt(prompt)}
+                onShare={() => setSharingPrompt(prompt)}
+                isHighlighted={directPromptId === prompt.id}
               />
             ))}
           </div>
@@ -398,6 +485,19 @@ const PromptLibrary = () => {
         <PromptDetailsModal
           prompt={viewingPrompt}
           onClose={() => setViewingPrompt(null)}
+        />
+      )}
+
+      {/* Share Link Modal */}
+      {sharingPrompt && (
+        <ShareLinkModal
+          prompt={sharingPrompt}
+          shareURL={getShareableURL(sharingPrompt.id, {
+            title: sharingPrompt.title,
+            purpose: sharingPrompt.purpose,
+            categoryId: sharingPrompt.categoryId
+          })}
+          onClose={() => setSharingPrompt(null)}
         />
       )}
     </div>
